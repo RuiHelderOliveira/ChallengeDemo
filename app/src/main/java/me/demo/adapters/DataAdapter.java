@@ -10,14 +10,11 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import me.demo.R;
 import me.demo.classes.User;
 import me.demo.interfaces.OnItemClickListener;
-import me.demo.R;
-
-import static me.demo.R.drawable.ic_male;
 
 /**
  * Created by Rui Oliveira on 10/01/18.

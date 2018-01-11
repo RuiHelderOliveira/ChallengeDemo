@@ -18,6 +18,7 @@ import me.demo.classes.User;
 import me.demo.interfaces.OnItemClickListener;
 import me.demo.services.ApiServices;
 import me.demo.services.ServiceGenerator;
+import me.demo.utils.Util;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,44 +39,48 @@ public class MainActivity extends AppCompatActivity {
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler);
 
-        Call<Data> call = ServiceGenerator.createService(ApiServices.class).getUsers(0, 20, "abc");
-        call.enqueue(new Callback<Data>() {
-            @Override
-            public void onResponse(Call<Data> call, Response<Data> response) {
+        if (Util.isNetworkConnected(this)) {
+            Call<Data> call = ServiceGenerator.createService(ApiServices.class).getUsers(0, 20, "abc");
+            call.enqueue(new Callback<Data>() {
+                @Override
+                public void onResponse(Call<Data> call, Response<Data> response) {
 
-                mAdapter = new DataAdapter(MainActivity.this, response.body().getResults(), new OnItemClickListener() {
-                    @Override
-                    public void onItemClick(User item) {
-                        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                        intent.putExtra("id", item);
-                        MainActivity.this.startActivity(intent);
+                    mAdapter = new DataAdapter(MainActivity.this, response.body().getResults(), new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(User item) {
+                            Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                            intent.putExtra(Util.USER, item);
+                            MainActivity.this.startActivity(intent);
+                        }
+                    });
+
+
+                    mRecyclerView.setHasFixedSize(true);
+                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 2);
+                        mRecyclerView.setLayoutManager(layoutManager);
                     }
-                });
 
+                    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                        mRecyclerView.setLayoutManager(mLayoutManager);
+                    }
 
-                mRecyclerView.setHasFixedSize(true);
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 2);
-                    mRecyclerView.setLayoutManager(layoutManager);
+                    mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+                    mRecyclerView.addItemDecoration(new DividerItemDecoration(MainActivity.this, LinearLayoutManager.VERTICAL));
+                    mRecyclerView.setAdapter(mAdapter);
+
                 }
 
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-                    mRecyclerView.setLayoutManager(mLayoutManager);
+                @Override
+                public void onFailure(Call<Data> call, Throwable t) {
+
+                    Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_LONG).show();
+
                 }
-
-                mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-                mRecyclerView.addItemDecoration(new DividerItemDecoration(MainActivity.this, LinearLayoutManager.VERTICAL));
-                mRecyclerView.setAdapter(mAdapter);
-
-            }
-
-            @Override
-            public void onFailure(Call<Data> call, Throwable t) {
-
-                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_LONG).show();
-
-            }
-        });
+            });
+        } else {
+            Toast.makeText(this, "Without connection", Toast.LENGTH_LONG).show();
+        }
     }
 }
